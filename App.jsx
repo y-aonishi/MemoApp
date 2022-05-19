@@ -1,27 +1,11 @@
 /* eslint-disable react/react-in-jsx-scope */
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
-
-import AppBar from './src/components/AppBar';
-import MemoList from './src/components/MemoList';
-import CircleButton from './src/components/CircleButton';
+import React from 'react';
+import MemoDataScreen from './src/screens/MemoDataScreen';
 
 export default function App() {
   return (
-    <View style={styles.container}>
 
-      <AppBar />
-      <MemoList />
-      <CircleButton>+</CircleButton>
+    <MemoDataScreen />
 
-    </View>
-  );
+    );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#EFE5E5',
-  },
-   
-});
