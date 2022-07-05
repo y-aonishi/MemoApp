@@ -1,12 +1,28 @@
 import React, {useState} from "react";
 import { Text, TextInput, View, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import Button from "../components/Button";
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+//import { auth } from '../firebase';
 
 
 export default function SignUpScreen(props){
     const {navigation} = props;
     const [email, setEmail] = useState('');
     const [pasword, setpasword] =useState('');
+    const auth = getAuth();
+    const handlePress = async () => {
+        try {
+            const user = await createUserWithEmailAndPassword( auth, email, pasword);
+            console.log(user);
+            navigation.reset({
+                index: 0,
+                routes:[{name:'MemoList'}],
+            });   
+        } catch (error) {
+            console.log(error.msessage);
+            Alert.alert(error.code);
+        }
+    }
 
     return(
         <View style={StyleSheet.container}>
@@ -20,7 +36,7 @@ export default function SignUpScreen(props){
                   keyboardType="email-address"
                   placeholder="Email Address"
                   textContentType="emailAddress"
-                  />
+                />
                 <TextInput
                   style={Styles.input}
                   value={pasword}
@@ -31,11 +47,7 @@ export default function SignUpScreen(props){
                   textContentType="password"
                 />
                 <Button label='Submit'
-                 onPress={() => {navigation.reset({
-                    index: 0,
-                    routes:[{name:'MemoList'}],
-                   });
-                 }}
+                 onPress={handlePress}
                />
                <View style={Styles.fottor}>
                     <Text style={Styles.fottertext}>Already registered?</Text>

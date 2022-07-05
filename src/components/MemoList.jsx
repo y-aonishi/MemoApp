@@ -1,66 +1,87 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Alert, FlatList } from 'react-native';
 import {Feather} from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { shape, string, instanceOf, arrayOf } from 'prop-types';
+import { format } from 'date-fns';
+import { getAuth } from 'firebase/auth';
+import { getFirestore, deleteDoc, doc } from "firebase/firestore";
 
-export default function MemoList(){
+
+export default function MemoList(props){
+    const { memos } = props;
     const navigation = useNavigation();
+
+    function deleteMemo(id) {
+      const db = getFirestore();
+      const auth = getAuth();
+      const user  = auth.currentUser;
+      if (user) {
+          const ref = `users/${user.uid}/memos`;
+//          Alert.alert('メモを削除します。よろしいですか？'[
+//            {
+//              text: 'キャンセル',
+//              onPress: () => {},
+//            },
+//            {
+//              text: '削除します',
+//              style: 'destructive',
+//               onPress: () => {
+                deleteDoc(doc(db, ref, id))
+                .catch((error) => {
+                    Alert.alert('削除に失敗しました');
+                })} 
+//               }
+//          ]);
+//      }
+    }
+
+    function renderItem({ item }) {
+      return(
+        <TouchableOpacity
+          style={styles.memo_list_item}
+          onPress={() => {navigation.navigate('MemoData', {id: item.id});}}
+        >
+          <View>
+            <Text style={styles.memo_list_item_title} numberOfLines={1}>{ item.bodyText }</Text>
+            <Text style={styles.memo_list_item_date}>{ format(item.updatedAt, 'yyyy年M月dd日 HH時mm分') }</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.memo_delete}
+            onPress={() => { deleteMemo(item.id); }}>
+            <Feather name='x' size={24} color='#b0b0b0' />
+          </TouchableOpacity>
+        </TouchableOpacity>
+      );
+    }
+
     return(
 
-      <View>
-
-        <TouchableOpacity
-          style={styles.memo_list_item}
-          onPress={() => {navigation.navigate('MemoData');}}
-        >
-          <View>
-            <Text style={styles.memo_list_item_title}>お買い物リスト</Text>
-            <Text style={styles.memo_list_item_date}>2022年5月15日 10:00</Text>
-          </View>
-          <TouchableOpacity
-           style={styles.memo_delete}
-           onPress={() => {Alert.alert('Are you sure?');}}>
-            <Feather name='x' size={24} color='#b0b0b0' />
-          </TouchableOpacity>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.memo_list_item}
-          onPress={() => {navigation.navigate('MemoData');}}
-        >
-          <View>
-            <Text style={styles.memo_list_item_title}>お買い物リスト</Text>
-            <Text style={styles.memo_list_item_date}>2022年5月15日 10:00</Text>
-          </View>
-          <TouchableOpacity
-           style={styles.memo_delete}
-           onPress={() => {Alert.alert('Are you sure?');}}>
-            <Feather name='x' size={24} color='#b0b0b0' />
-          </TouchableOpacity>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.memo_list_item}
-          onPress={() => {navigation.navigate('MemoData');}}
-        >
-          <View>
-            <Text style={styles.memo_list_item_title}>お買い物リスト</Text>
-            <Text style={styles.memo_list_item_date}>2022年5月15日 10:00</Text>
-          </View>
-          <TouchableOpacity
-           style={styles.memo_delete}
-           onPress={() => {Alert.alert('Are you sure?');}}>
-            <Feather name='x' size={24} color='#b0b0b0' />
-          </TouchableOpacity>
-        </TouchableOpacity>
-
-
+      <View style={styles.container}>
+        <FlatList
+          data={memos}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id }
+        />
       </View>
     
     );
 }
 
+
+MemoList.propTypes = {
+  memos: arrayOf(shape({
+    id: string,
+    bodyText: string,
+    updatedAt: instanceOf(Date),   
+  })).isRequired,
+};
+
 const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+
     memo_list_item:{
         backgroundColor: 'ffffff',
         flexDirection:'row',
@@ -72,7 +93,7 @@ const styles = StyleSheet.create({
         borderColor:'rgba(0,0,0,0.15',
       },
       memo_list_item_title:{
-        fontSize:16,
+        fontSize:20,
         lineHeight:32,
       },
       memo_list_item_date:{
@@ -84,4 +105,4 @@ const styles = StyleSheet.create({
         padding:8
       },
     
-});   
+}); 

@@ -1,35 +1,65 @@
-import React from "react";
+import React, {useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
-
+import { shape, string } from "prop-types";
 import CircleButton from "../components/CircleButton";
+import { getAuth } from 'firebase/auth';
+import { getFirestore, onSnapshot, doc } from "firebase/firestore";
+import { format } from 'date-fns';
 
 export default function MemoDataScreen (props){
-    const {navigation} = props;
+    const {navigation, route} = props;
+    const { id } = route.params;
+    console.log(id);
+    const [memo, setMemo] = useState(null);
+
+    useEffect(() => {
+        const db = getFirestore();
+        const auth = getAuth();
+        const user  = auth.currentUser;
+        let unsubscribe = () => {};
+        if (user) {
+            const ref = `users/${user.uid}/memos`;
+            unsubscribe = onSnapshot(doc(db, ref, id), (doc) => {
+                console.log(doc.id, doc.data());
+                const data = doc.data();
+                setMemo({
+                    id: id,
+                    bodyText: data.bodyText,
+                    updatedAt: data.updatedAt.toDate(),
+                });
+            });
+        }
+        return unsubscribe;    
+    },[]);
+
     return(
         <View style={styles.container}>
             <View style={styles.memoheader}>
-                <Text style={styles.memotitle}>買い物リスト</Text>
-                <Text style={styles.memodate}>2022年5月15日 10:00</Text>
+                <Text style={styles.memotitle} numberOfLines={2}>{memo && memo.bodyText}</Text>
+                <Text style={styles.memodate}>{ memo && format(memo.updatedAt, 'yyyy年M月dd日 HH時mm分') }</Text>
             </View>
 
             <ScrollView style={styles.memobody}>
                 <View>
                     <Text style={styles.container.memotext}>
-                    買い物リスト
-                    書体やレイアウトなどを確認するために用います。本文用なので使い方を間違えると不自然に見えることもありますので要注意。
-                    カタカナ語が苦手な方は「組見本」と呼ぶとよいでしょう。なお、組見本の「組」とは文字組のことです。活字印刷時代の用語だったと思います。このダミーテキストは自由に改変することが出来ます。主に書籍やウェブページなどのデザインを作成する時によく使われます。書体やレイアウトなどを確認するために用います。
-                    ダミーテキストはダミー文書やダミー文章とも呼ばれることがあります。カタカナ語が苦手な方は「組見本」と呼ぶとよいでしょう。主に書籍やウェブページなどのデザインを作成する時によく使われます。これは正式な文章の代わりに入れて使うダミーテキストです。
+                        {memo && memo.bodyText}
                     </Text>
                 </View>
             </ScrollView>
             <CircleButton
               style={{top:60,bottom:'auto'}}
               name='edit-2'
-              onPress={() => {navigation.navigate('MemoEdit');}}
+              onPress={() => {navigation.navigate('MemoEdit', { id: memo.id, bodyText: memo.bodyText});}}
             />
         </View>
     );
 }
+
+MemoDataScreen.propTypes = {
+    route: shape({
+        params: shape({ id: string}),
+    }).isRequired,
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -65,4 +95,3 @@ const styles = StyleSheet.create({
 
      
 });
-

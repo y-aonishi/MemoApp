@@ -1,4 +1,3 @@
-/* eslint-disable react/react-in-jsx-scope */
 import React from 'react';
 import LoginScreen from './src/screens/LoginScreen';
 import MemoCreateScreen from './src/screens/MemoCreateScreen';
@@ -7,12 +6,18 @@ import MemoEditScreen from './src/screens/MemoEditScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
 import MemoListScreen from './src/screens/MemoListScreen';
 import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CardStyleInterpolators } from '@react-navigation/stack';
+import { initializeApp } from 'firebase/app';
+import { getAuth} from 'firebase/auth';
+import { firebaseConfig } from './env';
 
+require('firebase/firestore');
 
 const Stack = createNativeStackNavigator();
 
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
 
 export default function App() {
   return (

@@ -35,5 +35,3 @@ const Styles=StyleSheet.create({
         color:'#ffffff',
     },
 });
-
-

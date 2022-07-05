@@ -1,11 +1,40 @@
-import React, {useState} from "react";
+import React, {useState,useEffect} from "react";
 import { Text, TextInput, View, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import Button from "../components/Button";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 
 export default function LoginScreen(props){
     const {navigation} = props;
     const [email, setEmail] = useState('');
     const [pasword, setpasword] =useState('');
+    const auth = getAuth();
+
+    useEffect(() => {
+        onAuthStateChanged(auth,(user) => {
+            if (user) {
+                navigation.reset({
+                    index: 0,
+                    routes: [{name: 'Memolist'}],
+                });
+            }
+        });
+    });
+
+
+    const handlePress = async () => {
+        signInWithEmailAndPassword(auth, email, pasword)
+        .then((userCredential) => {
+            const user = userCredential;
+            navigation.reset({
+            index: 0,
+            routes:[{name:'MemoList'}],
+            });
+        })
+        .catch((error) => {
+            console.log(error.msessage);
+            Alert.alert(error.code);
+        });
+    }
 
     return(
         <View style={StyleSheet.container}>
@@ -31,19 +60,15 @@ export default function LoginScreen(props){
                 />
                 <Button
                  label='Submit'
-                 onPress={() => {navigation.reset({
-                     index: 0,
-                     routes:[{name:'MemoList'}],
-                    });
-                  }}
+                 onPress={handlePress}
                 />
                 <View style={Styles.fottor}>
                     <Text style={Styles.fottertext}>Not registered?</Text>
                     <TouchableOpacity
-                      onPress={() => {navigation.reset({
+                       onPress={() => {navigation.reset({
                         index:0,
                         routes:[{name:'SignUp'}]
-                      })}}>
+                      })}}>                
                       <Text style={Styles.fotterlink}>Sign up here!</Text>
                     </TouchableOpacity>
                 </View>
